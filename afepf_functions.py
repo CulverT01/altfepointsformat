@@ -1,9 +1,11 @@
 import pymongo
+from bson.objectid import ObjectId
 #Add Driver
 def addDriver(collection):
     driverFirstName = input("Enter driver's first name")
     driverSecondName = input("Enter driver's second name")
     driverName = driverFirstName + " " + driverSecondName
+    driverInitial = input("Enter driver's initial")
     driverTeam = input("Enter driver's team's name")
     driverPoints = float(input("Enter driver's points total in Drivers' Championship"))
     driverPosition = int(input("Enter driver's position in Drivers' Championship"))
@@ -17,6 +19,7 @@ def addDriver(collection):
       npjtDriverPosition = int(input("Enter driver's position in the Nelson Piquet Jr Trophy"))
     if customerDriver.lower() == "yes" and npjtDriver.lower() == "yes":
       newDriver = {"Name": driverName,
+                   "Driver_Initial": driverInitial,
                    "Team": driverTeam,
                    "Driver_Points": driverPoints,
                    "Drivers_Championship_Position": driverPosition,
@@ -29,6 +32,7 @@ def addDriver(collection):
                    }
     elif customerDriver.lower() == "yes" and npjtDriver.lower() == "no":
       newDriver = {"Name": driverName,
+                   "Driver_Initial": driverInitial,
                    "Team": driverTeam,
                    "Driver_Points": driverPoints,
                    "Drivers_Championship_Position": driverPosition,
@@ -38,6 +42,7 @@ def addDriver(collection):
                    }
     elif customerDriver.lower() == "no" and npjtDriver.lower() == "yes":
       newDriver = {"Name": driverName,
+                   "Driver_Initial": driverInitial,
                    "Team": driverTeam,
                    "Driver_Points": driverPoints,
                    "Drivers_Championship_Position": driverPosition,
@@ -47,6 +52,7 @@ def addDriver(collection):
                    }
     else:
       newDriver = {"Name": driverName,
+                   "Driver_Initial": driverInitial,
                    "Team": driverTeam,
                    "Driver_Points": driverPoints,
                    "Drivers_Championship_Position": driverPosition
@@ -57,8 +63,9 @@ def addDriver(collection):
     finished = input("Finished adding drivers? Yes or no")
     if finished.lower() == "yes": return True
 #Add Team
-def addTeam(connection):
+def addTeam(collection):
     teamName = input("Enter team's name")
+    teamInitial = input("Enter team's initial")
     teamManufacturer = input("Enter team's manufacturer")
     teamPoints = float(input("Enter team's points total in Teams' Championship"))
     teamPosition = int(input("Enter team's position in Teams' Championship"))
@@ -68,32 +75,36 @@ def addTeam(connection):
       customerTeamPosition = int(input("Enter team's position in Customer Teams' Championship"))
     if customerTeam.lower() == "yes":
       newTeam = {"Team_Name": teamName,
-                   "Manufacturer": teamManufacturer,
-                   "Team_Points": teamPoints,
-                   "Teams_Championship_Position": teamPosition,
-                   "Customer_Team": {"Customer_Team_Points": customerTeamPoints,
-                                       "Customer_Team_Position": customerTeamPosition
-                                       }
-                   }
+                 "Team_Initial": teamInitial,
+                 "Manufacturer": teamManufacturer,
+                 "Team_Points": teamPoints,
+                 "Teams_Championship_Position": teamPosition,
+                 "Customer_Team": {"Customer_Team_Points": customerTeamPoints,
+                                   "Customer_Team_Position": customerTeamPosition
+                                   }
+                 }
     else:
       newTeam = {"Team_Name": teamName,
-                   "Manufacturer": teamManufacturer,
-                   "Team_Points": teamPoints,
-                   "Teams_Championship_Position": teamPosition
-                   }
+                 "Team_Initial": teamInitial,
+                 "Manufacturer": teamManufacturer,
+                 "Team_Points": teamPoints,
+                 "Teams_Championship_Position": teamPosition
+                 }
     result = collection.insert_one(newTeam)
     document_id = result.inserted_id
     print(document_id)
     finished = input("Finished adding teams? Yes or no")
     if finished.lower() == "yes": return True
 #Add Manufacturer
-def addManufacturer(connection):
+def addManufacturer(collection):
     manufacturerName = input("Enter manufacturer's name")
+    manufacturerInitial = input("Enter manufacturer's initial")
     manufacturerPoints = float(input("Enter manufacturer's points total in Manufacturers’ Cup"))
     manufacturerPosition = int(input("Enter manufacturer's position in Manufacturers’ Cup"))
     newManufacturer = {"Manufacturer_Name": manufacturerName,
-             "Manufacturer_Points": manufacturerPoints,
-             "Manufacturers_Cup_Position": manufacturerPosition
+                       "Manufacturer_Initial": manufacturerInitial,
+                       "Manufacturer_Points": manufacturerPoints,
+                       "Manufacturers_Cup_Position": manufacturerPosition
              }
     result = collection.insert_one(newManufacturer)
     document_id = result.inserted_id
@@ -113,71 +124,90 @@ def updateDriverResult(collection):
     cpos = False
     posC = False
     posN = False
+    pole = False
+    fastLap = False
 #Update Overall Drivers
     for pos in range(1, 23):
-        name = input("Enter driver's name who finished in position " + str(pos))
-        customer = bool(input("Is the driver a Customer Driver: True or False"))
-        if customer != False: customerDriverList.append(name)
-        npjt = bool(input("Is the driver a NPJT Driver: True or False"))
-        if npjt != False: npjtDriverList.append(name)
-        pole = bool(input("Did the driver score the pole for the ePrix: True or False"))
-        if pole != False: points += 1
-        fastLap = bool(input("Did the driver set the fastest lap for the ePrix: True or False"))
-        if fastLap != False: points += 1
-        ledLap = bool(input("Did the driver lead a lap during the ePrix: True or False"))
-        if ledLap != False: points += 1
+        init = input("Enter driver's initial who finished in position " + str(pos))
+        customer = input("Is the driver a Customer Driver: yes or no")
+        if customer.lower() == "yes": customerDriverList.append(init)
+        npjt = input("Is the driver a NPJT Driver: yes or no")
+        if npjt.lower() == "yes": npjtDriverList.append(init)
+        if pole != True:
+            poleScore = input("Did the driver score the pole for the ePrix: yes or no")
+            if poleScore.lower() == "yes":
+                points += 1
+                pole = True
+        if fastLap != True:
+            fastLapScore = input("Did the driver set the fastest lap for the ePrix: yes or no")
+            if fastLapScore.lower() == "yes":
+                points += 1
+                fastLap = True
+        ledLap = input("Did the driver lead a lap during the ePrix: yes or no")
+        if ledLap.lower() == "yes": points += 1
         points += float(input("Enter the points they scored from their finishing position:"))
-        filterDoc = {"Name": name}
+        filterDoc = {"Driver_Initial": init}
         updateDoc = {"$inc": {"Driver_Points": points}}
+        result = update_one(filterDoc,{"$push": {"Finishes": pos}}, upsert=True)
         update(filterDoc, updateDoc, collection)
         points = 0
-    cursor = collection.find({}, {"_id": 0, "Name": 1, "Driver_Points": 1, "Drivers_Championship_Position": 1}).sort("Driver_Points", pymongo.DESCENDING)
+    cursor = collection.find({}, {"_id": 0, "Driver_Initial": 1, "Driver_Points": 1,
+                                  "Drivers_Championship_Position": 1, "Finishes": 1,}).sort("Driver_Points", pymongo.DESCENDING)
     for document in cursor:
         print(document)
     while cpos != True:
-        name2 = input("Enter driver's name to alter their championship position")
+        init2 = input("Enter driver's initial to alter their championship position")
         newpos = int(input("Enter their new championship position:"))
-        filterDoc2 = {"Name": name2}
+        filterDoc2 = {"Driver_Initial": init2}
         updateDoc2 = {"$set": {"Drivers_Championship_Position": newpos}}
         update(filterDoc2, updateDoc2, collection)
-        cpos = bool(input("Finished updating drivers? True or False"))
+        cposCheck = input("Finished updating drivers? yes or no")
+        if cposCheck.lower() == "yes": cpos = True
 #Update Customer Drivers
     for customer in customerDriverList:
         print(customer)
         customerPoints = float(input("Enter the points they scored from their finishing position in the Customer class:"))
-        filterDocC = {"Name": customer}
+        filterDocC = {"Driver_Initial": customer}
         updateDocC = {"$inc": {"Customer_Driver.Customer_Driver_Points": customerPoints}}
         update(filterDocC, updateDocC, collection)
-    cursorC = collection.find({}, {"_id": 0, "Name": 1, "Customer_Driver.Customer_Driver_Points": 1,
-                                  "Customer_Driver.Customer_Driver_Position": 1}).sort("Customer_Driver.Customer_Driver_Points", pymongo.DESCENDING)
+        finishC = customerDriverList.index(customer) + 1
+        updateFinishC = {"$push": {"Customer_Driver.Customer_Finishes": finishC}}
+        result = update_one(filterDocC, updateFinishC, upsert=True)
+    cursorC = collection.find({}, {"_id": 0, "Driver_Initial": 1, "Customer_Driver.Customer_Driver_Points": 1,
+                                  "Customer_Driver.Customer_Driver_Position": 1,
+                                   "Customer_Driver.Customer_Finishes": 1,}).sort("Customer_Driver.Customer_Driver_Points", pymongo.DESCENDING)
     for document in cursorC:
         print(document)
     while posC != True:
-        nameC = input("Enter driver's name to alter their championship position")
+        initC = input("Enter driver's initial to alter their championship position")
         newposC = int(input("Enter their new championship position:"))
-        filterDocC2 = {"Name": nameC}
+        filterDocC2 = {"Driver_Initial": initC}
         updateDocC2 = {"$set": {"Customer_Driver.Customer_Driver_Position": newposC}}
-        resultC2 = collection.update_one(filterDocC2, updateDocC2)
         update(filterDocC2, updateDocC2, collection)
-        posC = bool(input("Finished updating drivers? True or False"))
+        posCCheck = input("Finished updating drivers? yes or no")
+        if posCCheck.lower() == "yes": posC = True
 #Update NPJT Drivers
     for npjt in npjtDriverList:
         print(npjt)
         npjtPoints = float(input("Enter the points they scored from their finishing position in the NPJT class:"))
-        filterDocN = {"Name": npjt}
+        filterDocN = {"Driver_Initial": npjt}
         updateDocN = {"$inc": {"NPJT_Driver.NPJT_Driver_Points": npjtPoints}}
-        update(filterDocN, updateDocN, collection)     
-    cursorN = collection.find({}, {"_id": 0, "Name": 1, "NPJT_Driver.NPJT_Driver_Points": 1,
-                                  "NPJT_Driver.NPJT_Driver_Position": 1}).sort("NPJT_Driver.NPJT_Driver_Points", pymongo.DESCENDING)
+        update(filterDocN, updateDocN, collection)
+        finishN = npjtDriverList.index(npjt) + 1
+        updateFinishN = {"$push": {"NPJT_Driver.NPJT_Finishes": finishN}}
+        result = update_one(filterDocN, updateFinishN, upsert=True)
+    cursorN = collection.find({}, {"_id": 0, "Driver_Initial": 1, "NPJT_Driver.NPJT_Driver_Points": 1,
+                                  "NPJT_Driver.NPJT_Driver_Position": 1, "NPJT_Driver.NPJT_Finishes": 1,}).sort("NPJT_Driver.NPJT_Driver_Points", pymongo.DESCENDING)
     for document in cursorN:
         print(document)
     while posN != True:
-        nameN = input("Enter driver's name to alter their championship position")
+        initN = input("Enter driver's initial to alter their championship position")
         newposN = int(input("Enter their new championship position:"))
-        filterDocN2 = {"Name": nameN}
+        filterDocN2 = {"Driver_Initial": initN}
         updateDocN2 = {"$set": {"NPJT_Driver.NPJT_Driver_Position": newposN}}
         update(filterDocN2, updateDocN2, collection)
-        posC = bool(input("Finished updating drivers? True or False"))        
+        posNCheck = input("Finished updating drivers? yes or no")
+        if posNCheck.lower() == "yes": posN = True        
 #Update Team Result
 def updateTeamResult(collection):
     points = 0
@@ -185,92 +215,120 @@ def updateTeamResult(collection):
     teamPos = False
     teamPosC = False
 #Update Overall Teams
-    for x in range(10):
-        name = input("Enter the team's name to add their points")
-        customer = bool(input("Is the team a Customer Team: True or False"))
-        if customer != False: customerTeamList.append(name)
-        points = float(input("Enter their points scored:"))
-        filterDoc = {"Team_Name": name}
+    for x in range(11):
+        init = input("Enter the team's name to add their points")
+        customer = input("Is the team a Customer Team: yes or no"))
+        if customer.lower() == "yes": customerTeamList.append(init)
+        filterDoc = {"Team_Initial": init}
         updateDoc = {"$inc": {"Team_Points": points}}
+        points = float(input("Enter their points scored:"))
+        pos1 = int(input("Enter the finishing position of the team's first car:"))
+        pos2 = int(input("Enter the finishing position of the team's second car:"))
+        teamFinish = [pos1, pos2]
+        updateFinish = {"$push": {"Team_Finishes": teamFinish}}
+        result = update_one(filterDoc, updateFinish, upsert=True)
         update(filterDoc, updateDoc, collection)
-    cursor = collection.find({}, {"_id": 0, "Name": 1, "Team_Points": 1, "Teams_Championship_Position": 1}).sort("Team_Points", pymongo.DESCENDING)
+    cursor = collection.find({}, {"_id": 0, "Team_Initial": 1, "Team_Points": 1,
+                                  "Teams_Championship_Position": 1, "Team_Finishes": 1}).sort("Team_Points", pymongo.DESCENDING)
     for document in cursor:
         print(document)
     while teamPos != True:
-        name2 = input("Enter team's name to alter their championship position")
+        init2 = input("Enter team's initial to alter their championship position")
         newpos = int(input("Enter their new championship position:"))
-        filterDoc2 = {"Team_Name": name2}
+        filterDoc2 = {"Team_Intial": init2}
         updateDoc2 = {"$set": {"Teams_Championship_Position": newpos}}
         update(filterDoc2, updateDoc2, collection)
-        teamPos = bool(input("Finished updating teams? True or False"))
+        teamPosCheck = input("Finished updating teams? yes or no")
+        if teamPosCheck.lower() == "yes": teamPos = True
 #Update Customer Teams
     for customer in customerTeamList:
         print(customer)
         customerPoints = int(input("Enter the points they scored in the Customer class:"))
-        filterDocC = {"Name": customer}
+        filterDocC = {"Team_Initial": customer}
         updateDocC = {"$inc": {"Customer_Team.Customer_Team_Points": customerPoints}}
+        points = float(input("Enter their points scored:"))
+        posC1 = int(input("Enter the finishing position of the team's first car in the Customer class:"))
+        posC2 = int(input("Enter the finishing position of the team's second car in the Customer class:"))
+        teamFinishC = [posC1, posC2]
+        updateFinishC = {"$push": {"Customer_Team_Finishes": teamFinishC}}
+        result = update_one(filterDoc, updateFinishC, upsert=True)
         update(filterDocC, updateDocC, collection)
-    cursorC = collection.find({}, {"_id": 0, "Name": 1, "Customer_Team.Customer_Team_Points": 1,
-                                   "Customer_Team.Customer_Team_Position": 1}).sort("Customer_Team.Customer_Team_Points", pymongo.DESCENDING)
+    cursorC = collection.find({}, {"_id": 0, "Team_Initial": 1, "Customer_Team.Customer_Team_Points": 1,
+                                   "Customer_Team.Customer_Team_Position": 1},
+                              "Customer_Team.Customer_Team_Finishes": 1).sort("Customer_Team.Customer_Team_Points", pymongo.DESCENDING)
     for document in cursorC:
         print(document)
     while teamPosC != True:
-        nameC = input("Enter team's name to alter their championship position")
+        initC = input("Enter team's initial to alter their championship position")
         newposC = int(input("Enter their new championship position:"))
-        filterDocC2 = {"Team_Name": nameC}
+        filterDocC2 = {"Team_Initial": initC}
         updateDocC2 = {"$set": {"Customer_Team.Customer_Team_Position": newposC}}
         update(filterDocC2, updateDocC2, collection)
-        teamPosC = bool(input("Finished updating teams? True or False"))    
+        teamPosCCheck = input("Finished updating teams? yes or no")
+        if teamPosCCheck.lower() == "yes": teamPosC = True    
 #Update Manufacturer Result
 def updateManufacturerResult(collection):
     points = 0
     manuPos = False
     for x in range(6):
-        name = input("Enter the manufacturer's name to add their points")
+        init = input("Enter the manufacturer's initial to add their points")
         points = int(input("Enter their points scored:"))
-        filterDoc = {"Manufacturer_Name": name}
+        filterDoc = {"Manufacturer_Initial": init}
         updateDoc = {"$inc": {"Team_Points": points}}
+        points = float(input("Enter their points scored:"))
+        pos1 = int(input("Enter the finishing position of the manufacturer's first car:"))
+        pos2 = int(input("Enter the finishing position of the manufacturer's second car:"))
+        manuFinish = [pos1, pos2]
+        updateFinish = {"$push": {"Manufacturer_Finishes": manuFinish}}
+        result = update_one(filterDoc, updateFinish, upsert=True)
         update(filterDoc, updateDoc, collection)
-    cursor = collection.find({}, {"_id": 0, "Name": 1, "Manufacturer_Points": 1, "Manufacturer_Cup_Position": 1}).sort("Manufacturer_Points", pymongo.DESCENDING)
+    cursor = collection.find({}, {"_id": 0, "Manufacturer_Initial": 1, "Manufacturer_Points": 1,
+                                  "Manufacturer_Cup_Position": 1, "Manufacturer_Finishes": 1}).sort("Manufacturer_Points", pymongo.DESCENDING)
     for document in cursor:
         print(document)
     while manuPos != True:
-        name = input("Enter manufacturer's name to alter their championship position")
+        init2 = input("Enter manufacturer's init to alter their championship position")
         newpos = int(input("Enter their new championship position:"))
-        filterDoc2 = {"Team_Name": name2}
+        filterDoc2 = {"Manufacturer_Initial": init2}
         updateDoc2 = {"$set": {"Manufacturer_Cup_Position": newpos}}
         update(filterDoc2, updateDoc2, collection)
-        manuPos = bool(input("Finished updating teams? True or False"))
+        manuPosCheck = input("Finished updating manufacturers? yes or no")
+        if  manuPosCheck.lower() == "yes": manuPos = True
 #Update Driver
 def updateDriver(collection):
-    name = input("Enter the name of the driver you wish to update:")
-    filterDoc = {"Name": name}
+    initial = input("Enter the initial of the driver you wish to update:")
+    filterDoc = {"Driver_Initial": initial}
     choice = int(input("Which field do you want to update: 1) Name" + "\n"
-                       + "2) Team" + "\n"
-                       + "3) Driver_Points" + "\n"
-                       + "4) Drivers_Championship_Position" + "\n"
-                       + "5) Customer_Driver_Points" + "\n"
-                       + "6) Customer_Driver_Position" + "\n"
-                       + "7) NPJT_Driver_Points" + "\n"
-                       + "8) NPJT_Driver_Position"))
+                       + "2) Driver_Initial" + "\n"
+                       + "3) Team" + "\n"
+                       + "4) Driver_Points" + "\n"
+                       + "5) Drivers_Championship_Position" + "\n"
+                       + "6) Customer_Driver_Points" + "\n"
+                       + "7) Customer_Driver_Position" + "\n"
+                       + "8) NPJT_Driver_Points" + "\n"
+                       + "9) NPJT_Driver_Position"))
     if choice == 1:
         newName = input("Please enter the driver's updated name:")
         updateName = {"$set": {"Name":newName}}
         update(filterDoc, updateName, collection)
     elif choice == 2:
+        newInitial = (input("Please enter the driver's updated initial:"))
+        updateInitial = {"$set": {"Driver_Initial":newInitial}}
+        update(filterDoc, updateInitial, collection)
+    elif choice == 3:
         newTeam = input("Please enter the driver's updated team:")
         updateTeam = {"$set": {"Team":newTeam}}
         update(filterDoc, updateTeam, collection)
-    elif choice == 3:
+    elif choice == 4:
         newPoints = float(input("Please enter the driver's updated points total:"))
         updatePoints = {"$set": {"Driver_Points":newPoints}}
         update(filterDoc, updatePoints, collection)
-    elif choice == 4:
+    elif choice == 5:
         newPosition = int(input("Please enter the driver's updated championship position:"))
         updatePosition = {"$set": {"Drivers_Championship_Position":newPosition}}
         update(filterDoc, updatePosition, collection)
-    elif choice == 5:
-        result = collection.find_one({"$and":[{"Name": name}, {"Customer_Driver.Customer_Driver_Points" :{"$gte":0}}]})
+    elif choice == 6:
+        result = collection.find_one({"$and":[{"Driver_Initial": initial}, {"Customer_Driver.Customer_Driver_Points" :{"$gte":0}}]})
         newCustPoints = float(input("Please enter the driver's updated points total for the Customer Trophy for Drivers:"))
         updateCustPoints = {"$set": {"Customer_Driver.Customer_Driver_Points":newCustPoints}}
         if type(result) != None:
@@ -281,32 +339,32 @@ def updateDriver(collection):
                 result = collection.update_one(filterDoc, updateCustPoints, upsert = True)
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
-    elif choice == 6:
-        result = collection.find_one({"$and":[{"Name": name}, {"Customer_Driver.Customer_Driver_Position" :{"$gte":0}}]})
+    elif choice == 7:
+        result = collection.find_one({"$and":[{"Driver_Initial": initial}, {"Customer_Driver.Customer_Driver_Position" :{"$gte":0}}]})
         newCustPosition = int(input("Please enter the driver's updated championship position for the Customer Trophy for Drivers:"))
         updateCustPosition = {"$set": {"Customer_Driver.Customer_Driver_Position":newCustPosition}}
         if type(result) != None:
-            update(filterDoc, updatePosition, collection)
+            update(filterDoc, updateCustPosition, collection)
         else:
             cont = input("Field does not yet exist for driver document. Do you still wish to continue?: yes or no")
             if cont.lower() == "yes":
                 result = collection.update_one(filterDoc, updateCustPosition, upsert = True)
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
-    elif choice == 7:
-        result = collection.find_one({"$and":[{"Name": name}, {"NPJT_Driver.NPJT_Driver_Points" :{"$gte":0}}]})
+    elif choice == 8:
+        result = collection.find_one({"$and":[{"Driver_Initial": initial}, {"NPJT_Driver.NPJT_Driver_Points" :{"$gte":0}}]})
         newNPJTPoints = float(input("Please enter the driver's updated points total for the Nelson Piquet Jr Trophy:"))
-        updateNPJTPoints = {"$set": {"NPJT_Driver.NPJT_Driver_Points":newCustPoints}}
+        updateNPJTPoints = {"$set": {"NPJT_Driver.NPJT_Driver_Points":newNPJTPoints}}
         if type(result) != None:
-            update(filterDoc, updateCustPoints, collection)
+            update(filterDoc, updateNPJTPoints, collection)
         else:
             cont = input("Field does not yet exist for driver document. Do you still wish to continue?: yes or no")
             if cont.lower() == "yes":
-                result = collection.update_one(filterDoc, updateCustPoints, upsert = True)
+                result = collection.update_one(filterDoc, updateNPJTPoints, upsert = True)
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
-    elif choice == 8:
-        result = collection.find_one({"$and":[{"Name": name}, {"NPJT_Driver.NPJT_Driver_Position" :{"$gte":0}}]})
+    elif choice == 9:
+        result = collection.find_one({"$and":[{"Driver_Initial": initial}, {"NPJT_Driver.NPJT_Driver_Position" :{"$gte":0}}]})
         newNPJTPosition = int(input("Please enter the driver's updated championship position for the Nelson Piquet Jr Trophy:"))
         updateNPJTPosition = {"$set": {"NPJT_Driver.NPJT_Driver_Position":newNPJTPosition}}
         if type(result) != None:
@@ -314,41 +372,46 @@ def updateDriver(collection):
         else:
             cont = input("Field does not yet exist for driver document. Do you still wish to continue?: yes or no")
             if cont.lower() == "yes":
-                result = collection.update_one(filterDoc, updateDoc, upsert = True)
+                result = collection.update_one(filterDoc, updateNPJTPosition, upsert = True)
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
     else:
-        print("Enter a number between 1 and 8, which corresponds with the field you would like to update")
-    finished = input("Finished adding drivers? Yes or no")
+        print("Enter a number between 1 and 9, which corresponds with the field you would like to update")
+    finished = input("Finished updating drivers? Yes or no")
     if finished.lower() == "yes": return True
 #Update Team
 def updateTeam(collection):
-    name = input("Enter the name of the team you wish to update:")
-    filterDoc = {"Team_Name": name}
+    initial = input("Enter the initial of the team you wish to update:")
+    filterDoc = {"Team_Initial": initial}
     choice = int(input("Which field do you want to update: 1) Team_Name" + "\n"
-                       + "2) Manufacturer" + "\n"
-                       + "3) Team_Points" + "\n"
-                       + "4) Teams_Championship_Position" + "\n"
-                       + "5) Customer_Team_Points" + "\n"
-                       + "6) Customer_Team_Position"))
+                       + "2) Team_Initial" + "\n"
+                       + "3) Manufacturer" + "\n"
+                       + "4) Team_Points" + "\n"
+                       + "5) Teams_Championship_Position" + "\n"
+                       + "6) Customer_Team_Points" + "\n"
+                       + "7) Customer_Team_Position"))
     if choice == 1:
         newName = input("Please enter the team's updated name:")
         updateName = {"$set": {"Team_Name":newName}}
         update(filterDoc, updateName, collection)
     elif choice == 2:
+        newInitial = (input("Please enter the team's updated initial:"))
+        updateInitial = {"$set": {"Team_Initial":newInitial}}
+        update(filterDoc, updateInitial, collection)
+    elif choice == 3:
         newManu = input("Please enter the team's updated manufacturer:")
         updateManu = {"$set": {"Manufacturer":newManu}}
         update(filterDoc, updateManu, collection)
-    elif choice == 3:
+    elif choice == 4:
         newPoints = float(input("Please enter the team's updated points total:"))
         updatePoints = {"$set": {"Team_Points":newPoints}}
         update(filterDoc, updatePoints, collection)
-    elif choice == 4:
+    elif choice == 5:
         newPosition = int(input("Please enter the team's updated championship position:"))
         updatePosition = {"$set": {"Teams_Championship_Position":newPosition}}
         update(filterDoc, updatePosition, collection)
-    elif choice == 5:
-        result = collection.find_one({"$and":[{"Team_Name": name}, {"Customer_Team.Customer_Team_Points" :{"$gte":0}}]})
+    elif choice == 6:
+        result = collection.find_one({"$and":[{"Team_Initial": initial}, {"Customer_Team.Customer_Team_Points" :{"$gte":0}}]})
         newCustPoints = float(input("Please enter the team's updated points total for the Customer Teams Championship:"))
         updateCustPoints = {"$set": {"Customer_Team.Customer_Team_Points":newCustPoints}}
         if type(result) != None:
@@ -359,8 +422,8 @@ def updateTeam(collection):
                 result = collection.update_one(filterDoc, updateCustPoints, upsert = True)
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
-    elif choice == 6:
-        result = collection.find_one({"$and":[{"Team_Name": name}, {"Customer_Team.Customer_Team_Position" :{"$gte":0}}]})
+    elif choice == 7:
+        result = collection.find_one({"$and":[{"Team_Initial": initial}, {"Customer_Team.Customer_Team_Position" :{"$gte":0}}]})
         newCustPosition = int(input("Please enter the team's updated championship position for the Customer Teams Championship:"))
         updateCustPosition = {"$set": {"Customer_Team.Customer_Team_Position":newCustPosition}}
         if type(result) != None:
@@ -372,29 +435,156 @@ def updateTeam(collection):
                 print("Documents updated: " + str(result.modified_count))
                 print(collection.find_one(filterDoc))
     else:
-        print("Enter a number between 1 and 6, which corresponds with the field you would like to update")
-    finished = input("Finished adding teams? Yes or no")
+        print("Enter a number between 1 and 7, which corresponds with the field you would like to update")
+    finished = input("Finished updating teams? Yes or no")
     if finished.lower() == "yes": return True
 #Update Manufacturer
 def updateManufacturer(collection):
-    name = input("Enter the name of the driver you wish to update:")
-    filterDoc = {"Manufacturer_Name": name}
+    initial = input("Enter the initial of the manufacturer you wish to update:")
+    filterDoc = {"Manufacturer_Initial": initial}
     choice = int(input("Which field do you want to update: 1) Manufacturer_Name" + "\n"
-                       + "2) Manufacturer_Points" + "\n"
-                       + "3) Manufacturers_Cup_Position"))
+                       + "2) Manufacturer_Initial" + "\n"
+                       + "3) Manufacturer_Points" + "\n"
+                       + "4) Manufacturers_Cup_Position"))
     if choice == 1:
         newName = input("Please enter the manufacturer's updated name:")
         updateName = {"$set": {"Manufacturer_Name":newName}}
         update(filterDoc, updateName, collection)
     elif choice == 2:
+        newInitial = (input("Please enter the manufacturer's updated initial:"))
+        updateInitial = {"$set": {"Manufacturer_Initial":newInitial}}
+        update(filterDoc, updateInitial, collection)
+    elif choice == 3:
         newPoints = float(input("Please enter the manufacturer's updated points total:"))
         updatePoints = {"$set": {"Manufacturer_Points":newPoints}}
         update(filterDoc, updatePoints, collection)
-    elif choice == 3:
+    elif choice == 4:
         newPosition = int(input("Please enter the manufacturer's updated cup position:"))
         updatePosition = {"$set": {"Manufacturers_Cup_Position":newPosition}}
         update(filterDoc, updatePosition, collection)
     else:
-        print("Enter a number between 1 and 3, which corresponds with the field you would like to update")
-    finished = input("Finished adding manufacturers? Yes or no")
+        print("Enter a number between 1 and 4, which corresponds with the field you would like to update")
+    finished = input("Finished updating manufacturers? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Driver Championships results
+def readDriverResult(collection):
+    choice = int(input("Which Driver Championship do you wish to view: 1) Overall Drivers' Championship" + "\n"
+                       + "2) Customer Trophy for Drivers" + "\n"
+                       + "3) Nelson Piquet Jr Trophy"))
+    if choice == 1:
+        results = collection.find({}).sort("Drivers_Championship_Position", pymongo.ASCENDING)
+        for document in results:
+            print("Name:"+ str(document["Name"])+ "\n"
+                  + "Points: "+ str(document["Driver_Points"])+ "\n"
+                  + "Championship Position: "+ str(document["Drivers_Championship_Position"]) + "\n"
+                  + "Finishes: "+ str(document["Finishes"]) + "\n") 
+    elif choice == 2:
+        results = collection.find({"Customer_Driver.Customer_Driver_Points": {"$gte":0}}).sort("Customer_Driver.Customer_Driver_Position", pymongo.ASCENDING)
+        for document in results:
+            print("Name:"+ str(document["Name"])+ "\n"
+                  + "Points: "+ str(document["Customer_Driver"]["Customer_Driver_Points"])+ "\n"
+                  + "Championship Position: "+ str(document["Customer_Driver"]["Customer_Driver_Position"]) + "\n"
+                  + "Finishes: "+ str(document["Customer_Driver"]["Customer_Finishes"]) + "\n")
+    elif choice == 3:
+        results = collection.find({"NPJT_Driver.NPJT_Driver_Points": {"$gte":0}}).sort("NPJT_Driver.NPJT_Driver_Position", pymongo.ASCENDING)
+        for document in results:
+            print("Name:"+ str(document["Name"])+ "\n"
+                  + "Points: "+ str(document["NPJT_Driver"]["NPJT_Driver_Points"])+ "\n"
+                  + "Championship Position: "+ str(document["NPJT_Driver"]["NPJT_Driver_Position"]) + "\n"
+                  + "Finishes: "+ str(document["NPJT_Driver"]["NPJT_Finishes"]) + "\n")
+    else:
+        print("Incorrect input. Please enter either 1 or 2 or 3 to view a driver championship when asked")
+    finished = input("Finished viewing driver championship results? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Team Championships results
+def readTeamResult(collection):
+    choice = int(input("Which Team Championship do you wish to view: 1) Overall Teams' Championship" + "\n"
+                       + "2) Customer Teams' Championship"))
+    if choice == 1:
+        results = collection.find({}).sort("Teams_Championship_Position", pymongo.ASCENDING)
+        for document in results:
+            print("Name:"+ str(document["Team_Name"])+ "\n"
+                  + "Points: "+ str(document["Team_Points"])+ "\n"
+                  + "Championship Position: "+ str(document["Teams_Championship_Position"]) + "\n"
+                  + "Finishes: "+ str(document["Team_Finishes"]) + "\n")
+    elif choice == 2:
+        results = collection.find({"Customer_Team.Customer_Team_Points": {"$gte":0}}).sort("Customer_Team.Customer_Team_Position", pymongo.ASCENDING)
+        for document in results:
+            print("Name:"+ str(document["Team_Name"])+ "\n"
+                  + "Points: "+ str(document["Customer_Team"]["Customer_Team_Points"])+ "\n"
+                  + "Championship Position: "+ str(document["Customer_Team"]["Customer_Team_Position"]) + "\n"
+                  + "Finishes: "+ str(document["Customer_Team"]["Customer_Team_Finishes"]) + "\n")
+    else:
+        print("Incorrect input. Please enter either 1 or 2 to view a team championship when asked")
+    finished = input("Finished viewing team championship results? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Manufacturer Championship results
+def readManufacturerResult(collection):
+    results = collection.find({}).sort("Manufacturers_Cup_Position", pymongo.ASCENDING)
+    for document in results:
+        print("Name:"+ str(document["Manufacturer_Name"])+ "\n"
+              + "Points: "+ str(document["Manufacturer_Points"])+ "\n"
+              + "Cup Position: "+ str(document["Manufacturers_Cup_Position"]) + "\n"
+              + "Finishes: "+ str(document["Manufacturer_Finishes"]) + "\n")
+    finished = input("Finished viewing manufacturer championship results? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Driver
+def readDriver(collection):
+    driver = input("Please enter the Driver Initial of the driver you wish to view:")
+    result = collection.find_one({"Driver_Initial":driver})
+    print(result)
+    finished = input("Finished viewing drivers? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Team
+def readTeam(collection):
+    team = input("Please enter the Team Initial of the team you wish to view:")
+    result = collection.find_one({"Team_Initial":team})
+    print(result)
+    finished = input("Finished viewing teams? Yes or no")
+    if finished.lower() == "yes": return True
+#Read Manufacturer
+def readManufacturer(collection):
+    manufacturer = input("Please enter the Manufacturer Initial of the manufacturer you wish to view:")
+    result = collection.find_one({"Manufacturer_Initial":manufacturer})
+    print(result)
+    finished = input("Finished viewing manufacturers? Yes or no")
+    if finished.lower() == "yes": return True
+#Delete Driver
+def deleteDriver(collection):
+    driver = input("Enter the ObjectId of the Driver document you wish to delete")
+    docToDelete = {"_id": ObjectId(driver)}
+    confirm = input(str(collection.find_one(docToDelete)) + "\n" + "Do you wish to delete this document? Please enter Yes or No")
+    if confirm == "Yes":
+        result = collection.delete_one(docToDelete)
+        print(collection.find_one(docToDelete))
+        print("Documents deleted: " + str(result.deleted_count))
+    else:
+        print("Document will not be deleted. If this is not intended outcome, Please try again.")
+    finished = input("Finished deleting drivers? Yes or no")
+    if finished.lower() == "yes": return True
+#Delete Team
+def deleteTeam(collection):
+    team = input("Enter the ObjectId of the Team document you wish to delete")
+    docToDelete = {"_id": ObjectId(team)}
+    confirm = input(str(collection.find_one(docToDelete)) + "\n" + "Do you wish to delete this document? Please enter Yes or No")
+    if confirm == "Yes":
+        result = collection.delete_one(docToDelete)
+        print(collection.find_one(docToDelete))
+        print("Documents deleted: " + str(result.deleted_count))
+    else:
+        print("Document will not be deleted. If this is not intended outcome, Please try again.")
+    finished = input("Finished deleting teams? Yes or no")
+    if finished.lower() == "yes": return True
+#Delete Manufacturer
+def deleteManufacturer(collection):
+    manufacturer = input("Enter the ObjectId of the Manufacturer document you wish to delete")
+    docToDelete = {"_id": ObjectId(manufacturer)}
+    confirm = input(str(collection.find_one(docToDelete)) + "\n" + "Do you wish to delete this document? Please enter Yes or No")
+    if confirm == "Yes":
+        result = collection.delete_one(docToDelete)
+        print(collection.find_one(docToDelete))
+        print("Documents deleted: " + str(result.deleted_count))
+    else:
+        print("Document will not be deleted. If this is not intended outcome, Please try again.")
+    finished = input("Finished deleting manufacturers? Yes or no")
     if finished.lower() == "yes": return True
