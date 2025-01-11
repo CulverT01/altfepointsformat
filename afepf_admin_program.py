@@ -20,9 +20,12 @@ db = client.AltFePointsFormat
 x = False
 finished = False
 while finished != True:
-    mode = input("What mode would you like to use today: Add, Update, View, or Delete?")
+    mode = int(input("What mode would you like to use today, please enter 1, 2, 3, or 4: 1) Add" + "\n"
+                 + "2) Update" + "\n"
+                 + "3) View" + "\n"
+                 +"4) Delete"))
     #If mode is add, then:
-    if mode.lower() == "add":
+    if mode == 1:
         choice = int(input("Which collection do you wish to view from: 1) Drivers" + "\n"
                            + "2) Teams" + "\n"
                            + "3) Manufacturers?"))
@@ -42,7 +45,7 @@ while finished != True:
             while x != True:
                 x = afepf.addManufacturer(collection)
     #If mode is update, then:            
-    elif mode.lower() == "update":
+    elif mode == 2:
         updateChoice = int(input("Do you wish to 1) Update a document" + "\n"
                                  + "2) Add the results of a recent ePrix"))
         if updateChoice == 1:
@@ -71,7 +74,7 @@ while finished != True:
             afepf.updateTeamResult(collection)
             collection = db.Manufacturers
             afepf.updateManufacturerResult(collection)
-    elif mode.lower() == "view":
+    elif mode == 3:
         viewChoice = int(input("Do you wish to view 1) A single document" + "\n"
                                + "2) The most recent standings for a championship"))
         if viewChoice == 1:
@@ -112,7 +115,7 @@ while finished != True:
                 collection = db.Manufacturers
                 while x != True:
                     x = afepf.readManufacturerResult(collection)
-    elif mode.lower() == "delete":
+    elif mode == 4:
         delChoice = int(input("Which collection do you wish to delete from: 1) Drivers" + "\n"
                                + "2) Teams" + "\n"
                                + "3) Manufacturers?"))
@@ -130,6 +133,8 @@ while finished != True:
             collection = db.Manufacturers
             while x != True:
                 x = afepf.deleteManufacturer(collection)
+    else:
+        print("Please enter a number between 1 and 4")
     finish = input("Are you finished with the program: Yes or No")
     if finish.lower() == "yes": finished = True
     x = False
