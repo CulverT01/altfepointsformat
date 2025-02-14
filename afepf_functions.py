@@ -144,14 +144,20 @@ def checkDriver(initial, champ):
     resultList = []
     for document in results:
         resultList.append(str(document["Driver_Initial"]))
-    return True if initial in resultList else return False
+    if initial in resultList:
+        return True
+    else:
+        return False
 #Check Team
 def checkTeam(initial):
     results = collection.find({"Customer_Team.Customer_Team_Points": {"$gte":0}}, {"_id":0, "Team_Initial":1}).sort("Customer_Team.Customer_Team_Position", pymongo.ASCENDING)
     resultList = []
     for document in results:
         resultList.append(str(document["Team_Initial"]))
-    return True if initial in resultList else return False
+    if initial in resultList:
+        return True
+    else:
+        return False
 #Update Driver Result
 def updateDriverResult(collection):
     points = float(0)

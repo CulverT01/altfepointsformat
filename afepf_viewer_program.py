@@ -31,8 +31,8 @@ finishedDetails = False
 while finished != True:
     choice = input("Which season do you wish to view from: " + "Season 10" + "\n"
                        + "Season 11")
-    if choice.lower == "season 10": db = client.AltFePointsFormat
-    elif choice.lower == "season 11": db = client.Season11
+    if choice.lower() == "season 10": db = client.AltFePointsFormat
+    elif choice.lower() == "season 11": db = client.Season11
     else: print("Please enter the season you wish to view like so: 'season 1'")
     while finishedView != True:
         choice1 = int(input("Hello. If you wish to view a championship, enter 1:" + "\n"
