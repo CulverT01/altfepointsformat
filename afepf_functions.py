@@ -135,6 +135,23 @@ def updatePoints(pos):
     elif pos == 14: points = 2.0
     elif pos == 15: points = 1.0
     return points
+#Check Driver
+def checkDriver(initial, champ):
+    if champ == "customer":
+        results = collection.find({"Customer_Driver.Customer_Driver_Points": {"$gte":0}}, {"_id":0, "Driver_Initial":1}).sort("Customer_Driver.Customer_Driver_Position", pymongo.ASCENDING)
+    elif champ == "npjt":
+        results = collection.find({"NPJT_Driver.NPJT_Driver_Points": {"$gte":0}}, {"_id":0, "Driver_Initial":1}).sort("NPJT_Driver.NPJT_Driver_Position", pymongo.ASCENDING)
+    resultList = []
+    for document in results:
+        resultList.append(str(document["Driver_Initial"]))
+    return True if initial in resultList else return False
+#Check Team
+def checkTeam(initial):
+    results = collection.find({"Customer_Team.Customer_Team_Points": {"$gte":0}}, {"_id":0, "Team_Initial":1}).sort("Customer_Team.Customer_Team_Position", pymongo.ASCENDING)
+    resultList = []
+    for document in results:
+        resultList.append(str(document["Team_Initial"]))
+    return True if initial in resultList else return False
 #Update Driver Result
 def updateDriverResult(collection):
     points = float(0)
@@ -151,10 +168,10 @@ def updateDriverResult(collection):
     retirements = int(input("How many Retirements/Non-Classified finishers were there from the ePrix?")) 
     for pos in range(1, 23):
         init = input("Enter driver's initial who finished in position " + str(pos))
-        customer = input("Is the driver a Customer Driver: yes or no")
-        if customer.lower() == "yes": customerDriverList.append(init)
-        npjt = input("Is the driver a NPJT Driver: yes or no")
-        if npjt.lower() == "yes": npjtDriverList.append(init)
+        customer = checkDriver(init, "customer")
+        if customer == True: customerDriverList.append(init)
+        npjt = checkDriver(init, "npjt")
+        if npjt == True: npjtDriverList.append(init)
         if pole != True:
             poleScore = input("Did the driver score the pole for the ePrix: yes or no")
             if poleScore.lower() == "yes":
@@ -263,8 +280,8 @@ def updateTeamResult(collection):
 #Update Overall Teams
     for x in range(11):
         init = input("Enter the team's initial to add their points")
-        customer = input("Is the team a Customer Team: yes or no")
-        if customer.lower() == "yes": customerTeamList.append(init)
+        customer = checkTeam(init)
+        if customer == True: customerTeamList.append(init)
         filterDoc = {"Team_Initial": init}
         pos1 = int(input("Enter the finishing position of the team's first car:"))
         retire1 = input("Did the car retire from the ePrix? Yes or No")
