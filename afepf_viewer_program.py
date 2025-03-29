@@ -29,9 +29,10 @@ finishedView = False
 finishedChamp = False
 finishedDetails = False
 while finished != True:
-    choice = input("Which season do you wish to view from: " + "Season 10" + "\n"
+    choice = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 10" + "\n"
                        + "Season 11")
-    if choice.lower() == "season 10": db = client.AltFePointsFormat
+    if choice.lower() == "season 1": db = client.Season1
+    elif choice.lower() == "season 10": db = client.AltFePointsFormat
     elif choice.lower() == "season 11": db = client.Season11
     else: print("Please enter the season you wish to view like so: 'season 1'")
     while finishedView != True:
@@ -56,9 +57,10 @@ while finished != True:
                     finishedChamp = finish("Championships results")
                 #If choice is manufacturers, then:
                 elif choice2 == 3:
-                    collection = db.Manufacturers
-                    while x != True:
-                        x = afepf.readManufacturerResult(collection)
+                    if choice.lower() != "season 1":
+                        collection = db.Manufacturers
+                        while x != True:
+                            x = afepf.readManufacturerResult(collection)
                     finishedChamp = finish("Championships results")
                 x = False
         elif choice1 == 2:
@@ -80,9 +82,10 @@ while finished != True:
                     finishedDetails = finish("Competitor's details")
             #If choice is manufacturers, then:
                 elif choice2 == 3:
-                    collection = db.Manufacturers
-                    while x != True:
-                        x = afepf.readManufacturer(collection)
+                    if choice.lower() != "season 1":
+                        collection = db.Manufacturers
+                        while x != True:
+                            x = afepf.readManufacturer(collection)
                     finishedDetails = finish("Competitor's details")
                 x = False
         finishedView = finish("season")

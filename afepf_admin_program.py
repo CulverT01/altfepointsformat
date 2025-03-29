@@ -34,9 +34,10 @@ finishedVwSi = False
 finishedVwCh = False
 finishedDel = False
 while finished != True:
-    season = input("Which season do you wish to view from: " + "Season 10" + "\n"
+    season = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 10" + "\n"
                        + "Season 11")
-    if season.lower() == "season 10": db = client.AltFePointsFormat
+    if season.lower() == "season 1": db = client.Season1
+    elif season.lower() == "season 10": db = client.AltFePointsFormat
     elif season.lower() == "season 11": db = client.Season11
     else: print("Please enter the season you wish to view like so: 'season 1'")
     while finishedMode != True:
@@ -62,9 +63,10 @@ while finished != True:
                         x = afepf.addTeam(collection)
         #If choice is manufacturers, then:
                 elif choice == 3:
-                    collection = db.Manufacturers
-                    while x != True:
-                        x = afepf.addManufacturer(collection)
+                    if season.lower() != "season 1":
+                        collection = db.Manufacturers
+                        while x != True:
+                            x = afepf.addManufacturer(collection)
                 x = False
                 finishedAdd = finish("adding of documents")
             finishedAdd = False
@@ -92,21 +94,22 @@ while finished != True:
                             finishedUpdoc = finish("updating of the collection")
         #If choice is manufacturers, then:
                         elif choice == 3:
-                            collection = db.Manufacturers
-                            while x != True:
-                                x = afepf.updateManufacturer(collection)
+                            if season.lower() != "season 1":
+                                collection = db.Manufacturers
+                                while x != True:
+                                    x = afepf.updateManufacturer(collection)
                             finishedUpdoc = finish("updating of the collection")
                         x = False
                     finishedUpdoc = False
-                    finishedUpd = finish("updating of the database")
                 elif updateChoice == 2:
                     collection = db.Drivers
                     afepf.updateDriverResult(collection)
                     collection = db.Teams
                     afepf.updateTeamResult(collection)
-                    collection = db.Manufacturers
-                    afepf.updateManufacturerResult(collection)
-                    finishedUpd = finish("updating of the database")
+                    if season.lower() != "season 1":
+                        collection = db.Manufacturers
+                        afepf.updateManufacturerResult(collection)
+                finishedUpd = finish("updating of the database")
             finishedUpd = False
         #If mode is view, then:
         elif mode == 3:
@@ -132,13 +135,13 @@ while finished != True:
                             finishedVwSi = finish("competitor's details")
         #If choice is manufacturers, then:
                         elif choice == 3:
-                            collection = db.Manufacturers
-                            while x != True:
-                                x = afepf.readManufacturer(collection)
+                            if season.lower() != "season 1":
+                                collection = db.Manufacturers
+                                while x != True:
+                                    x = afepf.readManufacturer(collection)
                             finishedVwSi = finish("competitor's details")
                         x = False
                     finishedVwSi = False
-                    finishedView = finish("viewing of the database")
                 elif viewChoice == 2:
                     while finishedVwCh != True:
                         choice2 = int(input("Which collection do you wish to view championships from: 1) Drivers (Drivers' Championship, Customer Trophy for Drivers, Nelson Piquet Jr Trophy)" + "\n"
@@ -158,14 +161,15 @@ while finished != True:
                             finishedVwCh = finish("championships results")
         #If choice is manufacturers, then:
                         elif choice2 == 3:
-                            collection = db.Manufacturers
-                            while x != True:
-                                x = afepf.readManufacturerResult(collection)
+                            if season.lower() != "season 1":
+                                collection = db.Manufacturers
+                                while x != True:
+                                    x = afepf.readManufacturerResult(collection)
                             finishedVwCh = finish("championships results")
                         x = False
                     finishedVwCh = False
-                    finishedView = finish("viewing of the database")
-                finishedView = False
+                finishedView = finish("viewing of the database")
+            finishedView = False
         #If mode is delete, then:
         elif mode == 4:
             while finishedDel != True:
@@ -184,9 +188,10 @@ while finished != True:
                         x = afepf.deleteTeam(collection)
         #If choice is manufacturers, then:
                 elif delChoice == 3:
-                    collection = db.Manufacturers
-                    while x != True:
-                        x = afepf.deleteManufacturer(collection)
+                    if season.lower() != "season 1":
+                        collection = db.Manufacturers
+                        while x != True:
+                            x = afepf.deleteManufacturer(collection)
                 x = False
                 finishedDel = finish("deleting of documents")
             finishedDel = False
