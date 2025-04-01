@@ -218,65 +218,67 @@ def updateDriverResult(collection):
         cposCheck = input("Finished updating drivers? yes or no")
         if cposCheck.lower() == "yes": cpos = True
 #Update Customer Drivers
-    for customer in customerDriverList:
-        finishC = customerDriverList.index(customer) + 1
-        retC = input("Did driver " + str(customer) + " retire from the ePrix? Yes or No")
-        if retC.lower() == "no": customerPoints = updatePoints(finishC)
-        filterDocC = {"Driver_Initial": customer}
-        updateDocC = {"$inc": {"Customer_Driver.Customer_Driver_Points": customerPoints}}
-        update(filterDocC, updateDocC, collection)
-        updateFinishC = {"$push": {"Customer_Driver.Customer_Finishes": finishC}}
-        result = collection.update_one(filterDocC, updateFinishC, upsert=True)
-        customerPoints = 0
-    cursorC = collection.find({"Customer_Driver.Customer_Driver_Position":{"$gte":1}}, {"_id": 0, "Driver_Initial": 1, "Customer_Driver.Customer_Driver_Points": 1,
-                                   "Customer_Driver.Customer_Driver_Position": 1,
-                                   "Customer_Driver.Customer_Finishes": 1,}).sort("Customer_Driver.Customer_Driver_Points", pymongo.DESCENDING)
-    docPosC = 1 
-    for document in cursorC:
-        print("Driver Initial: "+ str(document["Driver_Initial"])+ "\n"
-               + "Points: "+ str(document["Customer_Driver"]["Customer_Driver_Points"])+ "\n"
-               + "Old Championship Position: " + str(document["Customer_Driver"]["Customer_Driver_Position"]) + "\n"
-               + "Finishes: "+ str(document["Customer_Driver"]["Customer_Finishes"]) + "\n"
-               + "New Championship Position: " + str(docPosC) + "\n")
-        docPosC += 1
-    while posC != True:
-        initC = input("Enter driver's initial to alter their championship position")
-        newposC = int(input("Enter their new championship position:"))
-        filterDocC2 = {"Driver_Initial": initC}
-        updateDocC2 = {"$set": {"Customer_Driver.Customer_Driver_Position": newposC}}
-        update(filterDocC2, updateDocC2, collection)
-        posCCheck = input("Finished updating drivers? yes or no")
-        if posCCheck.lower() == "yes": posC = True
+    if len(customerDriverList) > 3:
+        for customer in customerDriverList:
+            finishC = customerDriverList.index(customer) + 1
+            retC = input("Did driver " + str(customer) + " retire from the ePrix? Yes or No")
+            if retC.lower() == "no": customerPoints = updatePoints(finishC)
+            filterDocC = {"Driver_Initial": customer}
+            updateDocC = {"$inc": {"Customer_Driver.Customer_Driver_Points": customerPoints}}
+            update(filterDocC, updateDocC, collection)
+            updateFinishC = {"$push": {"Customer_Driver.Customer_Finishes": finishC}}
+            result = collection.update_one(filterDocC, updateFinishC, upsert=True)
+            customerPoints = 0
+        cursorC = collection.find({"Customer_Driver.Customer_Driver_Position":{"$gte":1}}, {"_id": 0, "Driver_Initial": 1, "Customer_Driver.Customer_Driver_Points": 1,
+                                       "Customer_Driver.Customer_Driver_Position": 1,
+                                       "Customer_Driver.Customer_Finishes": 1,}).sort("Customer_Driver.Customer_Driver_Points", pymongo.DESCENDING)
+        docPosC = 1 
+        for document in cursorC:
+            print("Driver Initial: "+ str(document["Driver_Initial"])+ "\n"
+                   + "Points: "+ str(document["Customer_Driver"]["Customer_Driver_Points"])+ "\n"
+                   + "Old Championship Position: " + str(document["Customer_Driver"]["Customer_Driver_Position"]) + "\n"
+                   + "Finishes: "+ str(document["Customer_Driver"]["Customer_Finishes"]) + "\n"
+                   + "New Championship Position: " + str(docPosC) + "\n")
+            docPosC += 1
+        while posC != True:
+            initC = input("Enter driver's initial to alter their championship position")
+            newposC = int(input("Enter their new championship position:"))
+            filterDocC2 = {"Driver_Initial": initC}
+            updateDocC2 = {"$set": {"Customer_Driver.Customer_Driver_Position": newposC}}
+            update(filterDocC2, updateDocC2, collection)
+            posCCheck = input("Finished updating drivers? yes or no")
+            if posCCheck.lower() == "yes": posC = True
 #Update NPJT Drivers
-    for npjt in npjtDriverList:
-        finishN = npjtDriverList.index(npjt) + 1
-        retN = input("Did driver " + str(npjt) + " retire from the ePrix? Yes or No")
-        if retN.lower() == "no": npjtPoints = updatePoints(finishN)
-        filterDocN = {"Driver_Initial": npjt}
-        updateDocN = {"$inc": {"NPJT_Driver.NPJT_Driver_Points": npjtPoints}}
-        update(filterDocN, updateDocN, collection)     
-        updateFinishN = {"$push": {"NPJT_Driver.NPJT_Finishes": finishN}}
-        result = collection.update_one(filterDocN, updateFinishN, upsert=True)
-        npjtPoints = 0
-    cursorN = collection.find({"NPJT_Driver.NPJT_Driver_Position":{"$gte":1}}, {"_id": 0, "Driver_Initial": 1, "NPJT_Driver.NPJT_Driver_Points": 1,
-                                  "NPJT_Driver.NPJT_Driver_Position": 1, "NPJT_Driver.NPJT_Finishes": 1,}).sort("NPJT_Driver.NPJT_Driver_Points", pymongo.DESCENDING)
-    docPosN = 1
-    
-    for document in cursorN:
-        print("Driver Initial: "+ str(document["Driver_Initial"])+ "\n"
-               + "Points: "+ str(document["NPJT_Driver"]["NPJT_Driver_Points"])+ "\n"
-               + "Old Championship Position: " + str(document["NPJT_Driver"]["NPJT_Driver_Position"]) + "\n"
-               + "Finishes: "+ str(document["NPJT_Driver"]["NPJT_Finishes"]) + "\n"
-               + "New Championship Position: " + str(docPosN) + "\n")
-        docPosN += 1
-    while posN != True:
-        initN = input("Enter driver's initial to alter their championship position")
-        newposN = int(input("Enter their new championship position:"))
-        filterDocN2 = {"Driver_Initial": initN}
-        updateDocN2 = {"$set": {"NPJT_Driver.NPJT_Driver_Position": newposN}}
-        update(filterDocN2, updateDocN2, collection)
-        posNCheck = input("Finished updating drivers? yes or no")
-        if posNCheck.lower() == "yes": posN = True        
+    if len(npjtDriverList) > 1:
+        for npjt in npjtDriverList:
+            finishN = npjtDriverList.index(npjt) + 1
+            retN = input("Did driver " + str(npjt) + " retire from the ePrix? Yes or No")
+            if retN.lower() == "no": npjtPoints = updatePoints(finishN)
+            filterDocN = {"Driver_Initial": npjt}
+            updateDocN = {"$inc": {"NPJT_Driver.NPJT_Driver_Points": npjtPoints}}
+            update(filterDocN, updateDocN, collection)     
+            updateFinishN = {"$push": {"NPJT_Driver.NPJT_Finishes": finishN}}
+            result = collection.update_one(filterDocN, updateFinishN, upsert=True)
+            npjtPoints = 0
+        cursorN = collection.find({"NPJT_Driver.NPJT_Driver_Position":{"$gte":1}}, {"_id": 0, "Driver_Initial": 1, "NPJT_Driver.NPJT_Driver_Points": 1,
+                                      "NPJT_Driver.NPJT_Driver_Position": 1, "NPJT_Driver.NPJT_Finishes": 1,}).sort("NPJT_Driver.NPJT_Driver_Points", pymongo.DESCENDING)
+        docPosN = 1
+        
+        for document in cursorN:
+            print("Driver Initial: "+ str(document["Driver_Initial"])+ "\n"
+                   + "Points: "+ str(document["NPJT_Driver"]["NPJT_Driver_Points"])+ "\n"
+                   + "Old Championship Position: " + str(document["NPJT_Driver"]["NPJT_Driver_Position"]) + "\n"
+                   + "Finishes: "+ str(document["NPJT_Driver"]["NPJT_Finishes"]) + "\n"
+                   + "New Championship Position: " + str(docPosN) + "\n")
+            docPosN += 1
+        while posN != True:
+            initN = input("Enter driver's initial to alter their championship position")
+            newposN = int(input("Enter their new championship position:"))
+            filterDocN2 = {"Driver_Initial": initN}
+            updateDocN2 = {"$set": {"NPJT_Driver.NPJT_Driver_Position": newposN}}
+            update(filterDocN2, updateDocN2, collection)
+            posNCheck = input("Finished updating drivers? yes or no")
+            if posNCheck.lower() == "yes": posN = True        
 #Update Team Result
 def updateTeamResult(collection):
     points1 = 0
@@ -284,8 +286,9 @@ def updateTeamResult(collection):
     customerTeamList = []
     teamPos = False
     teamPosC = False
+    competitors = int(input("How many teams competed in the ePrix?"))
 #Update Overall Teams
-    for x in range(11):
+    for x in range(competitors):
         init = input("Enter the team's initial to add their points")
         customer = checkTeam(init, collection)
         if customer == True: customerTeamList.append(init)
@@ -323,48 +326,50 @@ def updateTeamResult(collection):
         teamPosCheck = input("Finished updating teams? yes or no")
         if teamPosCheck.lower() == "yes": teamPos = True
 #Update Customer Teams
-    for customer in customerTeamList:
-        print(customer)
-        filterDocC = {"Team_Initial": customer}
-        posC1 = int(input("Enter the finishing position of the team's first car in the Customer class:"))
-        retire1 = input("Did the car retire from the ePrix? Yes or No")
-        if retire1.lower() == "no": points1 = updatePoints(posC1)
-        posC2 = int(input("Enter the finishing position of the team's second car in the Customer class:"))
-        retire2 = input("Did the car retire from the ePrix? Yes or No")
-        #if retire2.lower() == "no": points2 = updatePoints(posC2)
-        #customerPoints = points1
-        updateDocC = {"$inc": {"Customer_Team.Customer_Team_Points": points1}}      
-        teamFinishC = [posC1, posC2]
-        updateFinishC = {"$push": {"Customer_Team.Customer_Team_Finishes": teamFinishC}}
-        result = collection.update_one(filterDocC, updateFinishC, upsert=True)
-        update(filterDocC, updateDocC, collection)
-        points1 = 0
-        points2 = 0
-    cursorC = collection.find({"Customer_Team.Customer_Team_Position": {"$gte":1}}, {"_id": 0, "Team_Initial": 1, "Customer_Team.Customer_Team_Points": 1,
-                                   "Customer_Team.Customer_Team_Position": 1,
-                                   "Customer_Team.Customer_Team_Finishes": 1}).sort("Customer_Team.Customer_Team_Points", pymongo.DESCENDING)
-    docPosC = 1
-    for document in cursorC:
-         print("Team Initial: "+ str(document["Team_Initial"])+ "\n"
-               + "Points: "+ str(document["Customer_Team"]["Customer_Team_Points"])+ "\n"
-               + "Championship Position: "+ str(document["Customer_Team"]["Customer_Team_Position"]) + "\n"
-               + "Finishes: "+ str(document["Customer_Team"]["Customer_Team_Finishes"]) + "\n"
-               + "New Championship Position: " +str(docPosC) +"\n")
-         docPosC += 1
-    while teamPosC != True:
-        initC = input("Enter team's initial to alter their championship position")
-        newposC = int(input("Enter their new championship position:"))
-        filterDocC2 = {"Team_Initial": initC}
-        updateDocC2 = {"$set": {"Customer_Team.Customer_Team_Position": newposC}}
-        update(filterDocC2, updateDocC2, collection)
-        teamPosCCheck = input("Finished updating teams? yes or no")
-        if teamPosCCheck.lower() == "yes": teamPosC = True    
+    if len(customerTeamList) > 1:
+        for customer in customerTeamList:
+            print(customer)
+            filterDocC = {"Team_Initial": customer}
+            posC1 = int(input("Enter the finishing position of the team's first car in the Customer class:"))
+            retire1 = input("Did the car retire from the ePrix? Yes or No")
+            if retire1.lower() == "no": points1 = updatePoints(posC1)
+            posC2 = int(input("Enter the finishing position of the team's second car in the Customer class:"))
+            retire2 = input("Did the car retire from the ePrix? Yes or No")
+            #if retire2.lower() == "no": points2 = updatePoints(posC2)
+            #customerPoints = points1
+            updateDocC = {"$inc": {"Customer_Team.Customer_Team_Points": points1}}      
+            teamFinishC = [posC1, posC2]
+            updateFinishC = {"$push": {"Customer_Team.Customer_Team_Finishes": teamFinishC}}
+            result = collection.update_one(filterDocC, updateFinishC, upsert=True)
+            update(filterDocC, updateDocC, collection)
+            points1 = 0
+            points2 = 0
+        cursorC = collection.find({"Customer_Team.Customer_Team_Position": {"$gte":1}}, {"_id": 0, "Team_Initial": 1, "Customer_Team.Customer_Team_Points": 1,
+                                       "Customer_Team.Customer_Team_Position": 1,
+                                       "Customer_Team.Customer_Team_Finishes": 1}).sort("Customer_Team.Customer_Team_Points", pymongo.DESCENDING)
+        docPosC = 1
+        for document in cursorC:
+             print("Team Initial: "+ str(document["Team_Initial"])+ "\n"
+                   + "Points: "+ str(document["Customer_Team"]["Customer_Team_Points"])+ "\n"
+                   + "Championship Position: "+ str(document["Customer_Team"]["Customer_Team_Position"]) + "\n"
+                   + "Finishes: "+ str(document["Customer_Team"]["Customer_Team_Finishes"]) + "\n"
+                   + "New Championship Position: " +str(docPosC) +"\n")
+             docPosC += 1
+        while teamPosC != True:
+            initC = input("Enter team's initial to alter their championship position")
+            newposC = int(input("Enter their new championship position:"))
+            filterDocC2 = {"Team_Initial": initC}
+            updateDocC2 = {"$set": {"Customer_Team.Customer_Team_Position": newposC}}
+            update(filterDocC2, updateDocC2, collection)
+            teamPosCCheck = input("Finished updating teams? yes or no")
+            if teamPosCCheck.lower() == "yes": teamPosC = True    
 #Update Manufacturer Result
 def updateManufacturerResult(collection):
     points1 = 0
     points2 = 0
     manuPos = False
-    for x in range(6):
+    competitors = int(input("How many registered manufacturers competed in the ePrix?"))
+    for x in range((competitors + 1)):
         init = input("Enter the manufacturer's initial to add their points")
         filterDoc = {"Manufacturer_Initial": init}  
         pos1 = int(input("Enter the finishing position of the manufacturer's first car:"))
