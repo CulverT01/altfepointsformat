@@ -369,7 +369,7 @@ def updateManufacturerResult(collection):
     points2 = 0
     manuPos = False
     competitors = int(input("How many registered manufacturers competed in the ePrix?"))
-    for x in range((competitors + 1)):
+    for x in range(competitors):
         init = input("Enter the manufacturer's initial to add their points")
         filterDoc = {"Manufacturer_Initial": init}  
         pos1 = int(input("Enter the finishing position of the manufacturer's first car:"))

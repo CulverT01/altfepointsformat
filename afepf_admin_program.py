@@ -39,7 +39,9 @@ while finished != True:
     if season.lower() == "season 1": db = client.Season1
     elif season.lower() == "season 10": db = client.AltFePointsFormat
     elif season.lower() == "season 11": db = client.Season11
-    else: print("Please enter the season you wish to view like so: 'season 1'")
+    else:
+        print("Please enter the season you wish to view like so: 'season 1'")
+        finishedMode = True
     while finishedMode != True:
         mode = int(input("What mode would you like to use today, please enter 1, 2, 3, or 4: 1) Add" + "\n"
                          + "2) Update" + "\n"
