@@ -135,8 +135,38 @@ def updatePoints(pos):
     elif pos == 14: points = 2.0
     elif pos == 15: points = 1.0
     return points
-#Check Driver
-def checkDriver(initial, champ, collection):
+#Check Driver is in Championship
+def checkDriver (initial, collection):
+    results = collection.find({"Driver_Points": {"$gte":0}}, {"_id":0, "Driver_Initial":1}).sort("Driver_Championship_Position", pymongo.ASCENDING)
+    resultList = []
+    for document in results:
+        resultList.append(str(document["Driver_Initial"]))
+    if initial in resultList:
+        return True
+    else:
+        return False
+#Check Team is in Championship
+def checkTeam (initial, collection):
+    results = collection.find({"Team_Points": {"$gte":0}}, {"_id":0, "Team_Initial":1}).sort("Team_Championship_Position", pymongo.ASCENDING)
+    resultList = []
+    for document in results:
+        resultList.append(str(document["Team_Initial"]))
+    if initial in resultList:
+        return True
+    else:
+        return False
+#Check Manufacturer is in Championship
+def checkManufacturer (initial, collection):
+    results = collection.find({"Manufacturer_Points": {"$gte":0}}, {"_id":0, "Manufacturer_Initial":1}).sort("Manufacturers_Cup_Position", pymongo.ASCENDING)
+    resultList = []
+    for document in results:
+        resultList.append(str(document["Manufacturer_Initial"]))
+    if initial in resultList:
+        return True
+    else:
+        return False
+#Check Driver Championship
+def checkDriverChamp(initial, champ, collection):
     if champ == "customer":
         results = collection.find({"Customer_Driver.Customer_Driver_Points": {"$gte":0}}, {"_id":0, "Driver_Initial":1}).sort("Customer_Driver.Customer_Driver_Position", pymongo.ASCENDING)
     elif champ == "npjt":
@@ -148,8 +178,8 @@ def checkDriver(initial, champ, collection):
         return True
     else:
         return False
-#Check Team
-def checkTeam(initial, collection):
+#Check Team Championship
+def checkTeamChamp(initial, collection):
     results = collection.find({"Customer_Team.Customer_Team_Points": {"$gte":0}}, {"_id":0, "Team_Initial":1}).sort("Customer_Team.Customer_Team_Position", pymongo.ASCENDING)
     resultList = []
     for document in results:
@@ -170,35 +200,46 @@ def updateDriverResult(collection):
     posN = False
     pole = False
     fastLap = False
+    led = 0
 #Update Overall Drivers
     starters = int(input("How many starters for the ePrix"))
     retirements = int(input("How many Retirements/Non-Classified finishers were there from the ePrix?"))
+    ledLapDrivers = int(input("How many Classified finishers led a lap?"))
     for pos in range(1, (starters + 1)):
-        init = input("Enter driver's initial who finished in position " + str(pos))
-        customer = checkDriver(init, "customer", collection)
-        if customer == True: customerDriverList.append(init)
-        npjt = checkDriver(init, "npjt", collection)
-        if npjt == True: npjtDriverList.append(init)
-        if pole != True:
-            poleScore = input("Did the driver score the pole for the ePrix: yes or no")
-            if poleScore.lower() == "yes":
-                points += 1
-                pole = True
-        if pos < (starters + 1) - retirements:
-            if fastLap != True:
-                fastLapScore = input("Did the driver set the fastest lap for the ePrix: yes or no")
-                if fastLapScore.lower() == "yes":
-                    points += 1
-                    fastLap = True
-            ledLap = input("Did the driver lead a lap during the ePrix: yes or no")
-            if ledLap.lower() == "yes": points += 1
-            finishPoints = updatePoints(pos)
-            points += finishPoints
-        filterDoc = {"Driver_Initial": init}
-        updateDoc = {"$inc": {"Driver_Points": points}}
-        result = collection.update_one(filterDoc,{"$push": {"Finishes": pos}}, upsert=True)
-        update(filterDoc, updateDoc, collection)
-        points = 0
+        checked = False
+        while checked != True:
+            init = input("Enter driver's initial who finished in position " + str(pos))
+            inital = str(init)
+            check = checkDriver(inital, collection)
+            if check == True:
+                customer = checkDriverChamp(init, "customer", collection)
+                if customer == True: customerDriverList.append(init)
+                npjt = checkDriverChamp(init, "npjt", collection)
+                if npjt == True: npjtDriverList.append(init)
+                if pole != True:
+                    poleScore = input("Did the driver score the pole for the ePrix: yes or no")
+                    if poleScore.lower() == "yes":
+                        points += 1
+                        pole = True
+                if pos < (starters + 1) - retirements:
+                    if fastLap != True:
+                        fastLapScore = input("Did the driver set the fastest lap for the ePrix: yes or no")
+                        if fastLapScore.lower() == "yes":
+                            points += 1
+                            fastLap = True
+                    if led < ledLapDrivers:
+                        ledLap = input("Did the driver lead a lap during the ePrix: yes or no")
+                        if ledLap.lower() == "yes": points += 1
+                    finishPoints = updatePoints(pos)
+                    points += finishPoints
+                filterDoc = {"Driver_Initial": init}
+                updateDoc = {"$inc": {"Driver_Points": points}}
+                result = collection.update_one(filterDoc,{"$push": {"Finishes": pos}}, upsert=True)
+                update(filterDoc, updateDoc, collection)
+                points = 0
+                checked = True
+            else:
+                print("Driver intial not stored in this season's collection, Please try again")
     cursor = collection.find({}, {"_id": 0, "Driver_Initial": 1, "Driver_Points": 1,
                                   "Drivers_Championship_Position": 1, "Finishes": 1,}).sort("Driver_Points", pymongo.DESCENDING)
     docPos = 1
@@ -289,24 +330,32 @@ def updateTeamResult(collection):
     competitors = int(input("How many teams competed in the ePrix?"))
 #Update Overall Teams
     for x in range(competitors):
-        init = input("Enter the team's initial to add their points")
-        customer = checkTeam(init, collection)
-        if customer == True: customerTeamList.append(init)
-        filterDoc = {"Team_Initial": init}
-        pos1 = int(input("Enter the finishing position of the team's first car:"))
-        retire1 = input("Did the car retire from the ePrix? Yes or No")
-        if retire1.lower() == "no": points1 = updatePoints(pos1)
-        pos2 = int(input("Enter the finishing position of the team's second car:"))
-        retire2 = input("Did the car retire from the ePrix? Yes or No")
-        if retire2.lower() == "no": points2 = updatePoints(pos2)
-        points = points1 + points2
-        updateDoc = {"$inc": {"Team_Points": points}}
-        teamFinish = [pos1, pos2]
-        updateFinish = {"$push": {"Team_Finishes": teamFinish}}
-        result = collection.update_one(filterDoc, updateFinish, upsert=True)
-        update(filterDoc, updateDoc, collection)
-        points1 = 0
-        points2 = 0
+        checked = False
+        while checked != True:
+            init = input("Enter the team's initial to add their points")
+            inital = str(init)
+            check = checkTeam(inital, collection)
+            if check == True:
+                customer = checkTeamChamp(init, collection)
+                if customer == True: customerTeamList.append(init)
+                filterDoc = {"Team_Initial": init}
+                pos1 = int(input("Enter the finishing position of the team's first car:"))
+                retire1 = input("Did the car retire from the ePrix? Yes or No")
+                if retire1.lower() == "no": points1 = updatePoints(pos1)
+                pos2 = int(input("Enter the finishing position of the team's second car:"))
+                retire2 = input("Did the car retire from the ePrix? Yes or No")
+                if retire2.lower() == "no": points2 = updatePoints(pos2)
+                points = points1 + points2
+                updateDoc = {"$inc": {"Team_Points": points}}
+                teamFinish = [pos1, pos2]
+                updateFinish = {"$push": {"Team_Finishes": teamFinish}}
+                result = collection.update_one(filterDoc, updateFinish, upsert=True)
+                update(filterDoc, updateDoc, collection)
+                points1 = 0
+                points2 = 0
+                checked = True
+            else:
+                print("Team intial not stored in this season's collection, Please try again")
     cursor = collection.find({}, {"_id": 0, "Team_Initial": 1, "Team_Points": 1,
                                   "Teams_Championship_Position": 1, "Team_Finishes": 1}).sort("Team_Points", pymongo.DESCENDING)
     docPos = 1
@@ -370,22 +419,30 @@ def updateManufacturerResult(collection):
     manuPos = False
     competitors = int(input("How many registered manufacturers competed in the ePrix?"))
     for x in range(competitors):
-        init = input("Enter the manufacturer's initial to add their points")
-        filterDoc = {"Manufacturer_Initial": init}  
-        pos1 = int(input("Enter the finishing position of the manufacturer's first car:"))
-        retire1 = input("Did the car retire from the ePrix? Yes or No")
-        if retire1.lower() == "no": points1 = updatePoints(pos1)
-        pos2 = int(input("Enter the finishing position of the manufacturer's second car:"))
-        retire2 = input("Did the car retire from the ePrix? Yes or No")
-        if retire2.lower() == "no": points2 = updatePoints(pos2)
-        points = points1 + points2
-        updateDoc = {"$inc": {"Manufacturer_Points": points}}
-        update(filterDoc, updateDoc, collection) 
-        manuFinish = [pos1, pos2]
-        updateFinish = {"$push": {"Manufacturer_Finishes": manuFinish}}
-        result = collection.update_one(filterDoc, updateFinish, upsert=True)
-        points1 = 0
-        points2 = 0
+        checked = False
+        while checked != True:
+            init = input("Enter the manufacturer's initial to add their points")
+            inital = str(init)
+            check = checkManufacturer(inital, collection)
+            if check == True:
+                filterDoc = {"Manufacturer_Initial": init}  
+                pos1 = int(input("Enter the finishing position of the manufacturer's first car:"))
+                retire1 = input("Did the car retire from the ePrix? Yes or No")
+                if retire1.lower() == "no": points1 = updatePoints(pos1)
+                pos2 = int(input("Enter the finishing position of the manufacturer's second car:"))
+                retire2 = input("Did the car retire from the ePrix? Yes or No")
+                if retire2.lower() == "no": points2 = updatePoints(pos2)
+                points = points1 + points2
+                updateDoc = {"$inc": {"Manufacturer_Points": points}}
+                update(filterDoc, updateDoc, collection) 
+                manuFinish = [pos1, pos2]
+                updateFinish = {"$push": {"Manufacturer_Finishes": manuFinish}}
+                result = collection.update_one(filterDoc, updateFinish, upsert=True)
+                points1 = 0
+                points2 = 0
+                checked = True
+            else:
+                print("Manufacturer intial not stored in this season's collection, Please try again")
     cursor = collection.find({}, {"_id": 0, "Manufacturer_Initial": 1, "Manufacturer_Points": 1,
                                   "Manufacturers_Cup_Position": 1, "Manufacturer_Finishes": 1}).sort("Manufacturer_Points", pymongo.DESCENDING)
     docPos = 1

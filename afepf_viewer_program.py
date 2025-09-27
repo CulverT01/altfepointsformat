@@ -25,13 +25,17 @@ except Exception as e:
 #db = client.AltFePointsFormat
 x = False
 finished = False
-finishedView = False
-finishedChamp = False
-finishedDetails = False
 while finished != True:
-    choice = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 10" + "\n"
+    finishedView = False
+    finishedChamp = False
+    finishedDetails = False
+    choice = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 2" + "\n" + "Season 3" + "\n" + "Season 4" + "\n" + "Season 5" + "\n" + "Season 10" + "\n"
                        + "Season 11")
     if choice.lower() == "season 1": db = client.Season1
+    elif choice.lower() == "season 2": db = client.Season2
+    elif choice.lower() == "season 3": db = client.Season3
+    elif choice.lower() == "season 4": db = client.Season4
+    elif choice.lower() == "season 5": db = client.Season5
     elif choice.lower() == "season 10": db = client.AltFePointsFormat
     elif choice.lower() == "season 11": db = client.Season11
     else: print("Please enter the season you wish to view like so: 'season 1'")

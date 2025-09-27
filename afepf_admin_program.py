@@ -34,9 +34,13 @@ finishedVwSi = False
 finishedVwCh = False
 finishedDel = False
 while finished != True:
-    season = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 10" + "\n"
+    season = input("Which season do you wish to view from: " + "Season 1" + "\n" + "Season 2" + "\n" + "Season 3" + "\n" + "Season 4" + "\n" + "Season 5" + "\n" + "Season 10" + "\n"
                        + "Season 11")
     if season.lower() == "season 1": db = client.Season1
+    elif season.lower() == "season 2": db = client.Season2
+    elif season.lower() == "season 3": db = client.Season3
+    elif season.lower() == "season 4": db = client.Season4
+    elif season.lower() == "season 5": db = client.Season5
     elif season.lower() == "season 10": db = client.AltFePointsFormat
     elif season.lower() == "season 11": db = client.Season11
     else:
