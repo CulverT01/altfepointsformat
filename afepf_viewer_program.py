@@ -9,7 +9,7 @@ def finish (state):
     if finish.lower() == "yes": finished = True
     return finished
 
-uri = "mongodb+srv://viewer:0kNTRuTbTtvrkvNm@clusterafepf.u389v.mongodb.net/?retryWrites=true&w=majority&appName=Clusterafepf"
+uri = "mongodb+srv://username:password@clusterafepf.u389v.mongodb.net/?retryWrites=true&w=majority&appName=Clusterafepf"
 
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
