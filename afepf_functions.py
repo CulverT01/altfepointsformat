@@ -135,6 +135,11 @@ def updatePoints(pos):
     elif pos == 14: points = 2.0
     elif pos == 15: points = 1.0
     return points
+#Update Bonus Points
+def updateBonusPoints(initial, collection):
+    filterDoc = {"Driver_Initial": initial}
+    updateDoc = {"$inc": {"Driver_Points": 1}}
+    update(filterDoc, updateDoc, collection)
 #Check Driver is in Championship
 def checkDriver (initial, collection):
     results = collection.find({"Driver_Points": {"$gte":0}}, {"_id":0, "Driver_Initial":1}).sort("Driver_Championship_Position", pymongo.ASCENDING)
@@ -195,20 +200,29 @@ def updateDriverResult(collection):
     npjtPoints = float(0)
     customerDriverList = []
     npjtDriverList = []
+    ledDriverList = []
     cpos = False
     posC = False
     posN = False
-    pole = False
-    fastLap = False
-    led = 0
 #Update Overall Drivers
     starters = int(input("How many starters for the ePrix"))
     retirements = int(input("How many Retirements/Non-Classified finishers were there from the ePrix?"))
+    pole = input("Enter the driver's inital who won the pole")
+    updateBonusPoints(pole, collection)
+    fastLap = input("Enter the driver's inital who set the fastest lap amongst the classified finishers")
+    updateBonusPoints(fastLap, collection)
     ledLapDrivers = int(input("How many Classified finishers led a lap?"))
+    while len(ledDriverList) < ledLapDrivers:
+        ledDriver = input("Enter a classified finishing driver's initial who led a lap")
+        if ledDriver in ledDriverList:
+            print("Driver has already been awarded lap lead point")
+        else:
+            updateBonusPoints(ledDriver, collection)
+            ledDriverList.append(str(ledDriver))
     for pos in range(1, (starters + 1)):
         checked = False
         while checked != True:
-            init = input("Enter driver's initial who finished in position " + str(pos))
+            init = input("Enter the driver's initial who finished in position " + str(pos))
             inital = str(init)
             check = checkDriver(inital, collection)
             if check == True:
@@ -216,22 +230,7 @@ def updateDriverResult(collection):
                 if customer == True: customerDriverList.append(init)
                 npjt = checkDriverChamp(init, "npjt", collection)
                 if npjt == True: npjtDriverList.append(init)
-                if pole != True:
-                    poleScore = input("Did the driver score the pole for the ePrix: yes or no")
-                    if poleScore.lower() == "yes":
-                        points += 1
-                        pole = True
-                if pos < (starters + 1) - retirements:
-                    if fastLap != True:
-                        fastLapScore = input("Did the driver set the fastest lap for the ePrix: yes or no")
-                        if fastLapScore.lower() == "yes":
-                            points += 1
-                            fastLap = True
-                    if led < ledLapDrivers:
-                        ledLap = input("Did the driver lead a lap during the ePrix: yes or no")
-                        if ledLap.lower() == "yes": points += 1
-                    finishPoints = updatePoints(pos)
-                    points += finishPoints
+                if pos < (starters + 1) - retirements: points = updatePoints(pos)
                 filterDoc = {"Driver_Initial": init}
                 updateDoc = {"$inc": {"Driver_Points": points}}
                 result = collection.update_one(filterDoc,{"$push": {"Finishes": pos}}, upsert=True)
@@ -454,7 +453,7 @@ def updateManufacturerResult(collection):
                + "New Championship Position: " +str(docPos) +"\n")
          docPos += 1
     while manuPos != True:
-        init2 = input("Enter manufacturer's init to alter their championship position")
+        init2 = input("Enter manufacturer's initial to alter their championship position")
         newpos = int(input("Enter their new championship position:"))
         filterDoc2 = {"Manufacturer_Initial": init2}
         updateDoc2 = {"$set": {"Manufacturers_Cup_Position": newpos}}
